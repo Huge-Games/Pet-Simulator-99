@@ -22,6 +22,15 @@ local Section_MainLabelSize = UDim2.new(0, 290, 0, 25)
 local BaseItemSize_Nested = UDim2.new(0, 250, 0, 30)
 local Mult = 0.9
 
+function scaleUdim(Udim, scale)
+	return UDim2.new(
+		Udim.X.Scale * scale,
+		Udim.X.Offset * scale,
+		Udim.Y.Scale * scale,
+		Udim.Y.Offset * scale
+	)
+end
+local SliderBaseSize = UDim2.new(1, 0, 0.621141613, 0)
 
 local function CalculateSize(Frame, List, Scale) -- ACS For Scaling, Don't ask ok.f
 	local Scale = Scale or 1
@@ -1024,14 +1033,15 @@ function UILib:CreateUI(forcePlayerGui)
 
 				UICorner_4.Parent = Arrow
 				UICorner_4.CornerRadius = UDim.new(0, 2)
-
+				
+				Main.ZIndex = 100
 				Main.Name = "Main"
 				Main.Parent = Pointer
 				Main.BackgroundColor3 = Color3.new(0.196078, 0.196078, 0.196078)
 				Main.BorderColor3 = Color3.new(0, 0, 0)
 				Main.BorderSizePixel = 0
 				Main.Position = UDim2.new(-0.100574739, 0, 0.325616956, 0)
-				Main.Size = UDim2.new(1, 0, 0.621141613, 0)
+				Main.Size = scaleUdim(SliderBaseSize, 1)
 
 				UICorner_5.Parent = Main
 				UICorner_5.CornerRadius = UDim.new(0, 4)
@@ -1092,7 +1102,7 @@ function UILib:CreateUI(forcePlayerGui)
 						)
 					end)
 				end
-				
+
 
 
 				local function CalculateMath()
@@ -1122,8 +1132,24 @@ function UILib:CreateUI(forcePlayerGui)
 					)
 
 					TextLabel.Text = tostring(Value) .. "/" .. tostring(MaxVal)
+					local textLength = #string.split(TextLabel.Text, "")
+					if textLength > 5 then
+						Main.Size = scaleUdim(
+							SliderBaseSize,
+							1 + (textLength*0.15)
+						)
+						if Value > MaxVal/2 then
+							print(Frame_2.AbsoluteSize.X)
+							Pointer.Position = UDim2.new(0, (Frame_2.AbsoluteSize.X-(Main.AbsoluteSize.X))+25, -1.8524157e-05, 0)
+						else
+							Pointer.Position = UDim2.new(1, 15, -1.8524157e-05, 0)
+						end
+					else
+						Main.Size = scaleUdim(SliderBaseSize,1)
+					end
 					callback(Value)
 				end
+
 
 				Frame.InputBegan:Connect(function(Input)
 					if (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) and Input.UserInputState == Enum.UserInputState.Begin then
@@ -2474,7 +2500,7 @@ function UILib:CreateUI(forcePlayerGui)
 					Main.BorderColor3 = Color3.new(0, 0, 0)
 					Main.BorderSizePixel = 0
 					Main.Position = UDim2.new(-0.100574739, 0, 0.325616956, 0)
-					Main.Size = UDim2.new(1, 0, 0.621141613, 0)
+					Main.Size = scaleUdim(SliderBaseSize, 1)
 
 					UICorner_5.Parent = Main
 					UICorner_5.CornerRadius = UDim.new(0, 4)
@@ -2536,7 +2562,6 @@ function UILib:CreateUI(forcePlayerGui)
 						end)
 					end
 
-
 					local function CalculateMath()
 						local Diff = Mouse.X - Frame.AbsolutePosition.X
 						if Diff < 0 then Diff = 0 end
@@ -2563,6 +2588,21 @@ function UILib:CreateUI(forcePlayerGui)
 						)
 
 						TextLabel.Text = tostring(Value) .. "/" .. tostring(MaxVal)
+						local textLength = #string.split(TextLabel.Text, "")
+						if textLength > 5 then
+							Main.Size = scaleUdim(
+								SliderBaseSize,
+								1 + (textLength*0.15)
+							)
+							if Value > MaxVal/2 then
+								print(Frame_2.AbsoluteSize.X)
+								Pointer.Position = UDim2.new(0, (Frame_2.AbsoluteSize.X-(Main.AbsoluteSize.X))+25, -1.8524157e-05, 0)
+							else
+								Pointer.Position = UDim2.new(1, 15, -1.8524157e-05, 0)
+							end
+						else
+							Main.Size = scaleUdim(SliderBaseSize,1)
+						end
 						callback(Value)
 					end
 
