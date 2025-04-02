@@ -1,0 +1,79 @@
+
+local Lib = getgenv().hgLib
+local Types = require(game.ReplicatedStorage.Library.Items.Types)
+
+local AutoEnchantCmds = {
+	
+	PickaxeItem = function(self, Data)
+		return Types.Type("Pickaxe"):From(Data)
+	end,
+	
+	GetPickaxes = function(self, Pickaxes)
+		if #Pickaxes == 0 then return {} end
+		local Save = Lib.Save.Get()
+		local ActualPickaxes = {}
+		for ItemId,Pickaxe in pairs(Save.Inventory.Pickaxe) do
+			if table.find(Pickaxes, Pickaxe.id) then
+				local Item = self:PickaxeItem(Pickaxe)
+				function Item:GetUID() return ItemId end
+				table.insert(ActualPickaxes, Item)
+			end
+		end
+		return ActualPickaxes
+	end,
+	
+	ValidateEnchants = function(self, Pickaxe)
+		local Enchants = Pickaxe:GetEnchants()
+		local PickaxeEnchants = {}
+		for _,Enchant in pairs(Enchants) do
+			table.insert(PickaxeEnchants, Enchant.dir.Name.." "..Enchant.tier)
+		end
+		
+		local Required = getgenv().HGEnchantConfig.Enchants
+		return not (table.foreach(
+			Required,
+			function(_,Enchant)
+				if not table.find(PickaxeEnchants, Enchant) then
+					return true
+				end
+			end
+		) or false)
+	end,
+	
+	Finished = false,
+	EnchantFunction = function(self)
+		local Pickaxes = self:GetPickaxes(getgenv().HGEnchantConfig.Pickaxes)
+		local To_Enchant, Finished = {}, 0
+		for _,Pickaxe in pairs(Pickaxes) do
+			if not self:ValidateEnchants(Pickaxe) then
+				table.insert(To_Enchant, Pickaxe:GetUID())
+			else
+				Finished+=1
+			end
+		end
+		if #To_Enchant > 0 then
+			local new_List = {}
+			for i,v in pairs(To_Enchant) do
+				new_List[v] = 1
+			end
+			local X,Y = Lib.Network.Invoke(
+				"Pickaxe Enchants Machine: Activate",
+				{},
+				new_List
+			)
+			if X then
+				print("[HUGE Games]: Enchanting Pickaxes. ("..Finished.."/"..#Pickaxes..")")
+			end
+		else
+			print("[HUGE Games]: Finished Enchanting")
+			self.Finished = true
+		end
+	end,
+	
+}
+
+local Current_Thread = math.random(1000,9999)
+getgenv().AutoEnchanterThread = Current_Thread
+repeat task.wait()
+	AutoEnchantCmds:EnchantFunction()
+until getgenv().AutoEnchanterThread ~= Current_Thread or AutoEnchantCmds.Finished
