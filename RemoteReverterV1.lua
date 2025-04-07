@@ -12,31 +12,18 @@ local Networking = require(game:GetService("ReplicatedStorage").Library.Client.N
 local Senv = getsenv(game:GetService("ReplicatedStorage").Library.Client.Network)
 
 local nameCache = {[1]={},[2]={},[3]={}}
-for i,v in next, getgc() do
-	if type(v) == "function" and islclosure(v) and not isexecutorclosure(v) then
+for i,v in next, getgc(true) do
+	if type(v) == "function" and islclosure(v) then-- and not isexecutorclosure(v) then
 		local Constants = getconstants(v)
+		local Func = v
 		
-		local tableFind_Fire = table.find(Constants, "Fire")
-		if Constants and tableFind_Fire then
-			local remote_Name = Constants[tableFind_Fire+1]
-			if remote_Name and not table.find(nameCache[1], remote_Name) then
-				table.insert(nameCache[1], remote_Name)
-			end
-		end
-		
-		local tableFind_Invoke = table.find(Constants, "Invoke")
-		if Constants and tableFind_Invoke then
-			local remote_Name = Constants[tableFind_Invoke+1]
-			if remote_Name and not table.find(nameCache[2], remote_Name) then
-				table.insert(nameCache[2], remote_Name)
-			end
-		end
-		
-		local tableFind_Unreliable = table.find(Constants, "UnreliableFire")
-		if Constants and tableFind_Unreliable then
-			local remote_Name = Constants[tableFind_Unreliable+1]
-			if remote_Name and not table.find(nameCache[3], remote_Name) then
-				table.insert(nameCache[3], remote_Name)
+		for Index,Method in pairs({"Fire", "Invoke", "UnreliableFire"}) do
+			local tableFind_Method = table.find(Constants, "Fire")
+			if Constants and tableFind_Method then
+				local remote_Name = Constants[tableFind_Method+1]
+				if remote_Name and not table.find(nameCache[Index], remote_Name) then
+					table.insert(nameCache[Index], remote_Name)
+				end
 			end
 		end
 	end
